@@ -137,7 +137,7 @@ pip install tensorflow opencv-python numpy matplotlib seaborn scikit-learn kaggl
 
 ### Opção 1: Google Colab (Recomendado)
 
-1. Acesse o notebook diretamente pelo badge no topo deste README.
+1. Acesse o notebook aberto clicando no badge no topo, ou diretamente através de nosso **[Link Oficial para o Google Colab](https://colab.research.google.com/drive/1oBZcstCkrvkj5GFwm9B4oe0iajFY_G-V?usp=sharing)**.
 2. Certifique-se de usar uma sessão com **GPU** ativada:
    - `Ambiente de execução` → `Alterar tipo de ambiente de execução` → `GPU`
 3. Configure sua credencial do Kaggle para download do dataset:
