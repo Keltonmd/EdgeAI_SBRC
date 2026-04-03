@@ -38,10 +38,13 @@ Os selos considerados neste processo de avaliação pelo Comitê Técnico de Art
 # Informações básicas
 Este artefato propõe, implementa e avalia uma arquitetura de comunicação e colaboração baseada em mensageria orientada a eventos para coordenação de robôs heterogêneos em ambiente industrial. A parte física e logística é simulada; entretanto, a IA (computação visual em borda) roda de forma totalmente desconectada em um microcontrolador real operando via internet.
 
+> **⚠️ REQUISITO FÍSICO OBRIGATÓRIO (RESTRIÇÃO DE HARDWARE):** 
+> Para a execução completa, reprodução dos experimentos e validação dos selos de funcionalidade, é **estritamente necessário possuir fisicamente uma placa de desenvolvimento ESP32-S3**. Sem este componente físico de hardware, é impossível efetuar as chamadas das Redes Neurais via TFLite Micro, impossibilitando com que os robôs do simulador tomem decisões, visto que as predições ocorrem de forma isolada do Host.
+
 **Ambiente de Execução Global:**
 - **Computador Host:** Sistema Operacional Linux (Ubuntu 20.04+ ou Debian 11+ recomendado). Necessita de ≥ 8GB de RAM para suportar a simulação gráfica, processos do orquestrador Python e o broker de rede de maneira conjunta e estável.
-- **Microcontrolador (Edge Device):**
-  - MCU: ESP32-S3-WROOM-1-N16R8 (Dual-Core Xtensa LX7 a 240 MHz).
+- **Microcontrolador (Edge Device Obrigatório):**
+  - MCU: ESP32-S3-WROOM-1-N16R8 (Dual-Core Xtensa LX7 a 240 MHz) ou arquitetura próxima da linha ESP32.
   - SRAM interna: 512 KB
   - Memória Flash: 16 MB
   - PSRAM Externa: 8 MB (opcional ativada apenas para avaliação das arquiteturas MobileNet pesadas apontadas no artigo).
