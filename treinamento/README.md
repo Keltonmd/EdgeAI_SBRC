@@ -208,21 +208,6 @@ Para mais detalhes sobre a arquitetura completa do sistema, consulte o [README p
 
 ---
 
-## 📄 Citação
-
-Se utilizar este código em sua pesquisa, por favor cite o trabalho correspondente:
-
-```bibtex
-@inproceedings{edgeai-sbrc2025,
-  title     = {[Título do Artigo]},
-  author    = {[Autores]},
-  booktitle = {Anais do SBRC 2025},
-  year      = {2025}
-}
-```
-
----
-
 ## 📜 Licença
 
 Este projeto está licenciado sob os termos definidos no repositório principal. Consulte o arquivo [LICENSE](../LICENSE) para mais detalhes.
