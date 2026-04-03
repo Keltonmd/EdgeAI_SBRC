@@ -4,6 +4,15 @@ import time
 import pandas as pd
 import os
 
+# ==============================================================
+# CONFIGURAÇÃO — Ajuste antes de executar
+# ==============================================================
+MQTT_BROKER   = "localhost"   # IP ou hostname do broker Mosquitto
+MQTT_PORT     = 1883
+MQTT_USER     = "SEU_USUARIO" # Usuário criado no Mosquitto
+MQTT_PASSWORD = "SUA_SENHA"   # Senha correspondente
+# ==============================================================
+
 ARQUIVO = "metricas_esp.csv"
 dados = []
 rodando = True  # Variável que controla o encerramento
@@ -52,10 +61,10 @@ def salvar():
 # MQTT setup
 # ======================
 client = mqtt.Client()
-client.username_pw_set("kelton", "Projeto2025")
+client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
 client.on_message = on_message
 
-client.connect("debian.local", 1883)
+client.connect(MQTT_BROKER, MQTT_PORT)
 client.subscribe("/esp/metricas")
 client.subscribe("/colaboracao/fim")
 

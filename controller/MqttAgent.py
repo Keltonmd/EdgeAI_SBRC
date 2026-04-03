@@ -5,17 +5,22 @@ import time
 import os
 import pandas as pd
 
+# ==============================================================
+# CONFIGURAÇÃO — Ajuste antes de executar
+# ==============================================================
+MQTT_BROKER   = "localhost"   # IP ou hostname do broker Mosquitto
+MQTT_PORT     = 1883
+MQTT_USER     = "SEU_USUARIO" # Usuário criado no Mosquitto
+MQTT_PASSWORD = "SUA_SENHA"   # Senha correspondente
+# ==============================================================
+
 class MqttAgent:
-    # multiagent.ddns.net
-    # ip: ip do edison
-    # ip 10.73.186.74
-    # ip: 192.168.1.223
-    def __init__(self, id: str, topicos_mqtt: list, broker: str = "debian.local", port: int = 1883):
+    def __init__(self, id: str, topicos_mqtt: list, broker: str = MQTT_BROKER, port: int = MQTT_PORT):
         self.client = mqtt.Client()
         self.client.on_message = self.on_message
         
         # Definindo autenticação
-        self.client.username_pw_set(username="kelton", password="Projeto2025")
+        self.client.username_pw_set(username=MQTT_USER, password=MQTT_PASSWORD)
         
         # Estados internos
         self._espera_bloco = False
