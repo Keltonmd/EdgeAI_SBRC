@@ -38,10 +38,10 @@ Para conseguir compilar o código de medição (`measure_all_models.cpp`), o Mak
    python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py -e hello_world /tmp/tflm_out
    ```
 
-3. Mova os arquivos gerados para dentro da subpasta `tf_micro` do seu projeto EdgeBoxAI:
+3. Mova os arquivos gerados para dentro da subpasta `tf_micro` do seu projeto EdgeAI_SBRC:
    ```bash
    # Mude para a pasta tflm_code
-   cd /caminho/para/EdgeBoxAI/tflm_code/
+   cd /caminho/para/EdgeAI_SBRC/tflm_code/
    
    # Traga os arquivos pra cá
    cp -r /tmp/tflm_out/* ./tf_micro/
@@ -62,15 +62,15 @@ Antes de testar a memória, os modelos em `.tflite` precisam ser encapsulados em
 
 1. Use o script já existente no seu repositório:
    ```bash
-   cd /caminho/para/EdgeBoxAI/modelos
+   cd /caminho/para/EdgeAI_SBRC/modelos
    ./tflite_to_cc.sh
    ```
    *(Ele roda o `xxd` nas imagens iterativamente).*
 
 2. Acesse as pastas onde o script jogou a saída (`/cc` e `/h`) e transfira todos os arquivos gerados para a pasta `tflm_code/modelos/`:
    ```bash
-   cp /caminho/de/saida/cc/*.cc /caminho/para/EdgeBoxAI/tflm_code/modelos/
-   cp /caminho/de/saida/h/*.h /caminho/para/EdgeBoxAI/tflm_code/modelos/
+   cp /caminho/de/saida/cc/*.cc /caminho/para/EdgeAI_SBRC/tflm_code/modelos/
+   cp /caminho/de/saida/h/*.h /caminho/para/EdgeAI_SBRC/tflm_code/modelos/
    ```
 
 > Verifique no código fonte de `measure_all_models.cpp` se os nomes dos `#include` batem exatamente com o que você acabou de gerar.
@@ -83,7 +83,7 @@ Tudo pronto! Com a biblioteca construída e os modelos importados:
 
 1. Vá para a raiz de `tflm_code/` e utilize nosso Makefile:
    ```bash
-   cd /caminho/para/EdgeBoxAI/tflm_code
+   cd /caminho/para/EdgeAI_SBRC/tflm_code
    make clean
    make
    ```

@@ -1,4 +1,4 @@
-# EdgeBoxAI - Classificação de Imagens com ESP32 (TFLite Micro e MQTT)
+# EdgeAI_SBRC - Classificação de Imagens com ESP32 (TFLite Micro e MQTT)
 
 Este projeto contém a implementação de um sistema que recebe imagens via MQTT de uma câmera (ou outro publicador), processa localmente no ESP32 usando TensorFlow Lite for Microcontrollers (TFLM) e publica o resultado de volta por MQTT, além de coletar métricas de latência e tempo de inferência.
 
@@ -79,8 +79,8 @@ Após as três modificações, pressione **`S`** para salvar e **`Esc`** para sa
 
 ### 1️⃣ Clone o repositório
 ```bash
-git clone https://github.com/SEU_USUARIO/EdgeBoxAI.git
-cd EdgeBoxAI/esp32
+git clone https://github.com/SEU_USUARIO/EdgeAI_SBRC.git
+cd EdgeAI_SBRC/esp32
 ```
 
 ### 2️⃣ Configure suas credenciais de Wi-Fi e MQTT

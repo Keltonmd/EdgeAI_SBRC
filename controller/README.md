@@ -103,7 +103,7 @@ Antes de usar este módulo, certifique-se de ter os seguintes componentes instal
 ### 1. Clone o repositório (caso ainda não tenha feito)
 
 ```bash
-git clone https://github.com/Keltonmd/EdgeBoxAI.git EdgeAI_SBRC
+git clone https://github.com/Keltonmd/EdgeAI_SBRC.git
 cd EdgeAI_SBRC/controller
 ```
 

@@ -56,7 +56,7 @@ Este artefato propõe, implementa e avalia uma arquitetura de comunicação e co
 Para a reprodução da cadeia descrita no artigo, exige-se as seguintes ferramentas e componentes pré-instalados:
 - **Simulador 3D:** CoppeliaSim EDU v4.10.0. Responsável pelas físicas cinemáticas. (Versão 4.4+ obrigatoriamente para compatibilidade nativa com *ZMQ Remote API*).
 - **Broker MQTT:** Eclipse Mosquitto. Ferramenta de roteamento para arquitetura Pub/Sub.
-- **IDE Python:** Interpretador Python 3.10 ou superior. Os pacotes estritos listados em `controller/requirements.txt` devem estar presentes no VirtualEnv (`cbor==1.0.0`, `coppeliasim-zmqremoteapi-client==2.0.4`, `numpy==2.3.1`, `pandas`, `openpyxl`, `paho-mqtt==2.1.0`, `pyzmq==27.0.0`).
+- **IDE Python:** Interpretador Python 3.10 ou superior. Os pacotes estritos listados em `controller/requirements.txt` devem estar presentes no VirtualEnv (`cbor==1.0.0`, `coppeliasim-zmqremoteapi-client==2.0.4`, `numpy==2.3.1`, `opencv-python==4.13.0.92`, `paho-mqtt==2.1.0`, `pandas==3.0.2`, `openpyxl==3.1.5`, `pyzmq==27.0.0`).
 - **Chain de Build C/C++:** Instalação do ESP-IDF (Espressif IoT Development Framework) na versão **v5.2.x**. Pode ser extraída diretamente pela sua Extensão formal de mercado no VS Code ("Espressif IDF").
 - **Bibliotecas Lógicas de IA (Embarcado):** Dependência TFLite Micro instalada. Em nosso código-fonte, usa-se a biblioteca modificada `espressif/esp-tflite-micro` na sua revisão `v1.3.5`. Devido à modernidade de nossa implementação Cmake, tal biblioteca já atua nativamente vinculada e manipulada de forma automática pelo manifest `idf_component.yml` dentro de `esp32/main` e não necessita de download manual adicional.
 
@@ -69,7 +69,7 @@ O processo de inicialização do ecossistema depende das partes comunicantes exp
 
 **1. Clonagem e Configuração do Repositório:**
 ```bash
-git clone https://github.com/Keltonmd/EdgeBoxAI.git EdgeAI_SBRC
+git clone https://github.com/Keltonmd/EdgeAI_SBRC.git
 cd EdgeAI_SBRC
 ```
 
