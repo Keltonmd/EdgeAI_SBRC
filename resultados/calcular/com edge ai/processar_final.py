@@ -8,7 +8,7 @@ import glob
 
 sns.set(style="whitegrid")
 
-base_dir = '/home/kelton/Documentos/resultados/calcular/'
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
 # ============================
 # FUNÇÕES AUXILIARES

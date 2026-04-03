@@ -206,18 +206,18 @@ def create_pdf(df, filename, is_landscape=False):
     plt.savefig(filename, format='pdf', bbox_inches='tight', dpi=300)
     plt.close()
 
-base = '/home/kelton/Documentos/resultados/calcular'
+base = os.path.abspath(os.path.dirname(__file__))
 
 print("Generating Appendix A...")
 df_a = process_table_a(base)
-create_pdf(df_a, '/home/kelton/Documentos/tcc/Monografia_TCC/apendices_pdf/apendice_A_sem_edge_ai.pdf', True)
+create_pdf(df_a, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_A_sem_edge_ai.pdf'), True)
 
 print("Generating Appendix B...")
 df_b = process_table_b(base)
-create_pdf(df_b, '/home/kelton/Documentos/tcc/Monografia_TCC/apendices_pdf/apendice_B_com_edge_ai.pdf', True)
+create_pdf(df_b, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_B_com_edge_ai.pdf'), True)
 
 print("Generating Appendix C...")
 df_c = process_table_c(base)
-create_pdf(df_c, '/home/kelton/Documentos/tcc/Monografia_TCC/apendices_pdf/apendice_C_inferencia_esp32.pdf', False)
+create_pdf(df_c, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_C_inferencia_esp32.pdf'), False)
 
 print("Done!")

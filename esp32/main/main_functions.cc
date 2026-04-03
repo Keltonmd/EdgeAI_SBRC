@@ -100,8 +100,7 @@ void wifi_init_sta() {
 
     // Configurações da rede WiFi
     wifi_config_t wifi_config = {};
-    //strcpy((char*)wifi_config.sta.ssid,     "ESTUDANTE 289");
-    //strcpy((char*)wifi_config.sta.password, "ESNSUF@15");
+
     strcpy((char*)wifi_config.sta.ssid,     "SEU_WIFI_AQUI");
     strcpy((char*)wifi_config.sta.password, "SUA_SENHA_AQUI");
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
@@ -358,8 +357,7 @@ void setup() {
 
     // Configura cliente MQTT
     esp_mqtt_client_config_t cfg = {};
-    //cfg.broker.address.uri = "mqtt://debian.local:1883";
-    //cfg.broker.address.uri = "mqtt://edison.local:1883";
+
     cfg.broker.address.uri = "mqtt://SEU_BROKER_MQTT_IP:1883";
 
     cfg.credentials.username = "SEU_USUARIO_MQTT";

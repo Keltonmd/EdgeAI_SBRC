@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-OUT_DIR = '/home/kelton/Documentos/tcc/Monografia_TCC/apendices_pdf'
+OUT_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf')
 os.makedirs(OUT_DIR, exist_ok=True)
 
 def fmt(v, decimals=2):
@@ -121,5 +121,5 @@ def process_raw_data(base_path, glob_pattern, pdf_name):
 
 if __name__ == '__main__':
     print('Gerando PDFs brutos...')
-    process_raw_data('/home/kelton/Documentos/resultados/calcular/sem edge ai', '**/*.csv', 'apendice_D_brutos_sem_edge.pdf')
-    process_raw_data('/home/kelton/Documentos/resultados/calcular/com edge ai/cnn_autoral', '**/*.csv', 'apendice_E_brutos_com_edge.pdf')
+    process_raw_data(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sem edge ai'), '**/*.csv', 'apendice_D_brutos_sem_edge.pdf')
+    process_raw_data(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'com edge ai/cnn_autoral'), '**/*.csv', 'apendice_E_brutos_com_edge.pdf')

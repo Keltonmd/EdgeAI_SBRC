@@ -9,7 +9,7 @@ import glob
 sns.set_theme(style="whitegrid")
 plt.rcParams.update({'font.size': 12})
 
-base_dir = '/home/kelton/Documentos/resultados/calcular/'
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
 # =============================================================================
 # PARTE 1: Comparação metricas_esp.csv (v2, v3, cnn_autoral/local)

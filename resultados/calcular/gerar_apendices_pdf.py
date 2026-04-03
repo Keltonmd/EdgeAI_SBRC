@@ -13,11 +13,11 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.backends.backend_pdf import PdfPages
 
-OUT_DIR = '/home/kelton/Documentos/tcc/Monografia_TCC/apendices_pdf'
+OUT_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf')
 os.makedirs(OUT_DIR, exist_ok=True)
 
-BASE_SEM = '/home/kelton/Documentos/resultados/calcular/sem edge ai'
-BASE_COM = '/home/kelton/Documentos/resultados/calcular/com edge ai'
+BASE_SEM = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sem edge ai')
+BASE_COM = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'com edge ai')
 
 
 # ─── helpers ─────────────────────────────────────────────────────────────────
