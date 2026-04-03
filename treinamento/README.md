@@ -6,7 +6,25 @@
 [![TFLite](https://img.shields.io/badge/TFLite-Edge%20Deployment-green)](https://www.tensorflow.org/lite)
 [![Dataset](https://img.shields.io/badge/Dataset-Kaggle-20beff?logo=kaggle)](https://www.kaggle.com/datasets/keltonmartins/colors-red-and-blue)
 
-Este módulo contém o notebook de treinamento e avaliação de redes neurais convolucionais (CNNs) para a tarefa de **classificação de cores** (Azul, Vermelho e Background), com foco em implantação em dispositivos de **borda (Edge AI)**. O modelo final é exportado para o formato `.tflite` para ser executado de forma eficiente em hardware embarcado.
+> Módulo de treinamento do projeto **"Avaliação de Inferência em Edge AI sob Restrições Embarcadas em um Sistema Robótico Simulado Baseado na Internet das Coisas Robóticas"** (SBRC 2026).
+
+Este diretório contém o notebook de treinamento e avaliação de redes neurais convolucionais (CNNs) para a tarefa de **classificação de cores** (Azul, Vermelho e Background), com foco em implantação em dispositivos de **borda (Edge AI)**. O modelo final é exportado para o formato `.tflite` para ser executado de forma eficiente em hardware embarcado.
+
+---
+
+## 📋 Sumário
+
+1. [Descrição](#-descrição)
+2. [Estrutura do Notebook](#️-estrutura-do-notebook)
+3. [Arquiteturas dos Modelos](#-arquiteturas-dos-modelos)
+4. [Dataset](#-dataset)
+5. [Dependências](#️-dependências)
+6. [Como Usar](#-como-usar)
+7. [Saídas Geradas](#-saídas-geradas)
+8. [Parâmetros de Treinamento](#️-parâmetros-de-treinamento)
+9. [Pipeline de Conversão para TFLite](#-pipeline-de-conversão-para-tflite)
+10. [Contexto do Projeto](#-contexto-do-projeto)
+11. [Licença](#-licença)
 
 ---
 
@@ -200,14 +218,20 @@ O arquivo `modelo.tflite` é posteriormente implantado no dispositivo de borda d
 
 Este notebook faz parte do projeto **EdgeAI SBRC**, que propõe uma arquitetura de visão computacional embarcada para classificação em tempo real usando:
 
-- **Raspberry Pi** (ou similar) como dispositivo de borda
-- **TensorFlow Lite** para inferência eficiente
+- **ESP32-S3** (ou microcontrolador equivalente) como dispositivo de borda
+- **TensorFlow Lite Micro** para inferência eficiente
 - **MQTT** para comunicação dos resultados
 
 Para mais detalhes sobre a arquitetura completa do sistema, consulte o [README principal do projeto](../README.md).
 
 ---
 
-## 📜 Licença
+## 📄 Licença
 
-Este projeto está licenciado sob os termos definidos no repositório principal. Consulte o arquivo [LICENSE](../LICENSE) para mais detalhes.
+Este módulo faz parte do projeto **EdgeAI SBRC** e está licenciado sob a **MIT License**.
+
+Consulte o arquivo [`LICENSE`](../LICENSE) na raiz do repositório para os termos completos.
+
+---
+
+*Desenvolvido no contexto do artigo submetido ao SBRC 2026 — IFNMG Campus Januária.*
