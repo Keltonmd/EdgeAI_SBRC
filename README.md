@@ -161,4 +161,6 @@ Este artefato lógico/software, em resguardo a todo seu repositório digital de 
 
 Copyright (c) 2026 Kelton e autores associados (EdgeAI SBRC, IFNMG - C. Januária).
 
+Os autores agradecem ao Instituto Federal de Educação, Ciência e Tecnologia do Norte de Minas Gerais (IFNMG) — Campus Januária pelo apoio e contribuição, em especial ao Programa Institucional de Bolsas de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI).
+
 Por favor, verifique o arquivo `LICENSE` original incluso na raiz completa do repositório clonado para consultar cópias integrais dos parágrafos de atribuições contratuais diretas.
