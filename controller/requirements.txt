@@ -9,3 +9,10 @@ pandas==3.0.2
 python-dateutil==2.9.0.post0
 pyzmq==27.0.0
 six==1.17.0
+# --- esp32_mock.py ---
+# `esp32_mock.py` already falls back to TensorFlow when `tflite-runtime`
+# is unavailable. Python 3.13 currently lacks `tflite-runtime` wheels in
+# many environments, so keep it optional there to avoid breaking the base
+# controller installation.
+tflite-runtime>=2.14; python_version < "3.13"
+python-dotenv>=1.0

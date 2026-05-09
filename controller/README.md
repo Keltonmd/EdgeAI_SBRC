@@ -77,6 +77,7 @@ controller/
 ├── cam.py                   # Agente da câmera (captura e envio de imagens ao ESP32)
 ├── sensorEsteira.py         # Agente do sensor de proximidade da esteira
 ├── logger_esp.py            # Coleta e salva métricas de inferência do ESP32
+├── esp32_mock.py            # Mock opcional do ESP32-S3 para validação sem hardware
 │
 └── requirements.txt         # Dependências Python do projeto
 ```
@@ -136,6 +137,9 @@ As dependências instaladas serão:
 | `openpyxl` | 3.1.5 | Suporte a arquivos Excel (utilizado pelo pandas) |
 | `pyzmq` | 27.0.0 | Sockets ZMQ (dependência do cliente CoppeliaSim) |
 | `cbor` | 1.0.0 | Serialização binária compacta |
+| `python-dotenv` | >= 1.0 | Leitura opcional do arquivo `.env` |
+
+> **Nota sobre o mock do ESP32:** o `esp32_mock.py` usa `tflite-runtime` quando disponível e faz fallback para TensorFlow. Em Python 3.13, é comum usar o fallback por indisponibilidade de wheels do `tflite-runtime`.
 
 ---
 
@@ -188,35 +192,31 @@ sudo systemctl status mosquitto
 
 Você deve ver `Active: active (running)`.
 
-### Configurando as credenciais nos scripts
+### Configurando as credenciais com `.env`
 
-Após criar o usuário no Mosquitto, configure as mesmas credenciais nos scripts Python. Há **dois arquivos** com um bloco de configuração bem visível no topo:
+Após criar o usuário no Mosquitto, copie o arquivo de exemplo para a raiz do repositório:
 
-**`MqttAgent.py`** — utilizado por todos os agentes de robô:
-```python
-# ==============================================================
-# CONFIGURAÇÃO — Ajuste antes de executar
-# ==============================================================
-MQTT_BROKER   = "localhost"   # IP ou hostname do broker Mosquitto
-MQTT_PORT     = 1883
-MQTT_USER     = "SEU_USUARIO" # Usuário criado no Mosquitto
-MQTT_PASSWORD = "SUA_SENHA"   # Senha correspondente
-# ==============================================================
+```bash
+cd ..
+cp .env.example .env
 ```
 
-**`logger_esp.py`** — logger de métricas do ESP32:
-```python
-# ==============================================================
-# CONFIGURAÇÃO — Ajuste antes de executar
-# ==============================================================
-MQTT_BROKER   = "localhost"   # IP ou hostname do broker Mosquitto
-MQTT_PORT     = 1883
-MQTT_USER     = "SEU_USUARIO" # Usuário criado no Mosquitto
-MQTT_PASSWORD = "SUA_SENHA"   # Senha correspondente
-# ==============================================================
+Edite o `.env` com as credenciais reais do broker:
+
+```env
+MQTT_BROKER=localhost
+MQTT_PORT=1883
+MQTT_USER=SEU_USUARIO
+MQTT_PASSWORD=SUA_SENHA
 ```
 
-> **Dica:** Se o broker estiver em outra máquina da rede, substitua `"localhost"` pelo IP do host (ex: `"192.168.1.100"`).
+Se quiser escolher outro modelo no `esp32_mock.py`, adicione opcionalmente:
+
+```env
+MODEL_PATH=/caminho/absoluto/para/modelo.tflite
+```
+
+> **Dica:** Se o broker estiver em outra máquina da rede, substitua `localhost` pelo IP ou hostname do host (ex: `192.168.1.100`).
 
 ---
 
@@ -232,9 +232,12 @@ Dentro do CoppeliaSim: `Arquivo → Open Scene → cenario/cenario_novo.ttt`
 
 > **Não pressione o botão Play!** O `main.py` inicia a simulação automaticamente.
 
-### Passo 2 — (Opcional) Conecte o ESP32
+### Passo 2 — Escolha a fonte de classificação
 
-Se quiser rodar o experimento completo com a classificação real na borda, conecte o ESP32 ao Wi-Fi e certifique-se de que ele aponta para o broker MQTT correto. Consulte o diretório `esp32/` para instruções de firmware.
+Você tem duas opções:
+
+- **ESP32 real:** conecte a placa ao Wi-Fi e certifique-se de que ela aponta para o broker MQTT correto. Consulte o diretório `esp32/` para instruções de firmware.
+- **Mock opcional:** em outro terminal, execute `python3 esp32_mock.py`. Ele publica em `/esp/resultado` e `/esp/metricas` como a placa real.
 
 ### Passo 3 — Execute o orquestrador
 
@@ -251,6 +254,8 @@ O `main.py` irá:
 2. Subir cada agente como um subprocesso independente (com 1 segundo de intervalo entre cada).
 3. Aguardar todos os processos finalizarem.
 4. Parar a simulação ao final.
+
+> **Importante:** o `main.py` não inicia o `esp32_mock.py`. No fluxo padrão do projeto, ele sobe os agentes do simulador e espera que a classificação venha da ESP32 real. Para rodar sem hardware, inicie o mock separadamente antes ou durante a execução.
 
 ### Monitorando os tópicos MQTT em tempo real
 
@@ -657,12 +662,10 @@ sudo systemctl restart mosquitto
 
 **Causa:** O valor de `MQTT_BROKER` nos scripts não aponta para o endereço correto do broker na sua rede.
 
-**Solução:** Edite o bloco de configuração no topo de `MqttAgent.py` e `logger_esp.py`:
+**Solução:** ajuste `MQTT_BROKER` no arquivo `.env` da raiz do repositório:
 
-```python
-# Altere para "localhost" se o broker estiver na mesma máquina,
-# ou informe o IP da máquina onde o Mosquitto está rodando:
-MQTT_BROKER = "192.168.1.100"  # exemplo
+```env
+MQTT_BROKER=192.168.1.100
 ```
 
 ---

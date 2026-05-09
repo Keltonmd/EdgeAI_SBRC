@@ -4,13 +4,19 @@ import time
 import pandas as pd
 import os
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
+except ImportError:
+    pass
+
 # ==============================================================
-# CONFIGURAÇÃO — Ajuste antes de executar
+# CONFIGURAÇÃO (via .env ou variáveis de ambiente)
 # ==============================================================
-MQTT_BROKER   = "localhost"   # IP ou hostname do broker Mosquitto
-MQTT_PORT     = 1883
-MQTT_USER     = "SEU_USUARIO" # Usuário criado no Mosquitto
-MQTT_PASSWORD = "SUA_SENHA"   # Senha correspondente
+MQTT_BROKER   = os.environ.get("MQTT_BROKER",   "localhost")
+MQTT_PORT     = int(os.environ.get("MQTT_PORT",  "1883"))
+MQTT_USER     = os.environ.get("MQTT_USER",     "SEU_USUARIO")
+MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD", "SUA_SENHA")
 # ==============================================================
 
 ARQUIVO = "metricas_esp.csv"

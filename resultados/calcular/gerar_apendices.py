@@ -1,223 +1,277 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
+"""
+gerar_apendices.py — Gera os Apêndices A (sem Edge AI) e B+C (com Edge AI) em PDF
+====================================================================================
+Apêndice A: tabela de latência mediana e jitter por tópico para cada ambiente,
+            usando os dados do repositório Multiagentes (sem Edge AI).
+Apêndice B: mesma tabela, porém com os dados com Edge AI (CNN Autoral).
+Apêndice C: tabela de tempo de inferência ESP por modelo (Autoral vs V2 vs V3).
 
-locale_pt = True
+Estrutura de dados esperada (caminhos relativos a este script):
+    sem edge ai/
+    ├── Local/
+    │   ├── resultados_Franka.csv
+    │   ├── resultados_youBot.csv
+    │   ├── resultados_UR10.csv
+    │   └── resultados_sensor.csv
+    ├── Edison/
+    │   ├── resultados_Franka_Edison.csv
+    │   ├── resultados_youBot_Edison.csv
+    │   ├── resultados_UR10_Edison.csv
+    │   └── resultados_sensor_Edison.csv
+    └── Nuvem/
+        ├── resultados_FrankaNuvem.csv
+        ├── resultados_youBotNuvem.csv
+        ├── resultados_UR10Nuvem.csv
+        └── resultados_sensorNuvem.csv
+
+    com edge ai/
+    ├── cnn_autoral/{local,edison,aws}/   resultados_*.csv + metricas_esp.csv
+    ├── v2/metricas_esp.csv
+    └── v3/metricas_esp.csv
+
+Saídas (em apendices_pdf/):
+    apendice_A_sem_edge_ai.pdf
+    apendice_B_com_edge_ai.pdf
+    apendice_C_inferencia_esp32.pdf
+
+Uso:
+    cd "resultados/calcular"
+    pip install -r requirements.txt
+    python gerar_apendices.py
+"""
+
+import os
+import glob
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+base = os.path.abspath(os.path.dirname(__file__))
+OUT_DIR = os.path.join(base, 'apendices_pdf')
+os.makedirs(OUT_DIR, exist_ok=True)
+
+SEM_EDGE = os.path.join(base, 'sem edge ai')
+COM_EDGE = os.path.join(base, 'com edge ai')
+
+
+# =============================================================================
+# UTILITÁRIOS
+# =============================================================================
 
 def parse_float(val):
     if isinstance(val, str):
         return float(val.replace(',', '.'))
     return float(val)
 
-def format_float(val, decimals=2):
-    s = f"{val:.{decimals}f}"
-    if locale_pt:
-        return s.replace('.', ',')
-    return s
 
-def get_col(df, cols):
-    for c in cols:
+def fmt(val, decimals=2):
+    try:
+        return f"{float(val):.{decimals}f}".replace('.', ',')
+    except Exception:
+        return str(val)
+
+
+def get_col(df, candidates):
+    for c in candidates:
         if c in df.columns:
             return c
-    return df.columns[3] if len(df.columns) > 3 else None
+    return None
 
-def process_table_a(base_path):
-    envs = ['Local', 'Edison', 'Nuvem']
-    topics = [
-        ('/bloco/disponivel', 'resultados_sensor.csv', 'resultados_sensor_Edison.csv', 'resultados_sensorNuvem.csv'),
-        ('/cam/capture', 'resultados_Cam.csv', 'resultados_Cam_Edison.csv', 'resultados_CamNuvem.csv'),
-        ('/colaboracao/fim', 'resultados_UR10.csv', 'resultados_UR10_Edison.csv', 'resultados_UR10Nuvem.csv'),
-        ('/entregador/coletaDisponivel', 'resultados_Franka.csv', 'resultados_Franka_Edison.csv', 'resultados_FrankaNuvem.csv'),
-        ('/entregador/encomendaColetada', 'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv'),
-        ('/entregador/encomendaDisponibilizada', 'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv'),
-        ('/entregador/pontoRecebimento', 'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv')
-    ]
-    
-    rows = []
-    for env in envs:
-        for t_name, f_local, f_edison, f_nuvem in topics:
-            if env == 'Local':
-                file_name = f_local
-            elif env == 'Edison':
-                file_name = f_edison
-            else:
-                file_name = f_nuvem
-                
-            path = os.path.join(base_path, 'sem edge ai', env, file_name)
-            if not os.path.exists(path):
-                # Fallback to try another name based on what we found
-                continue
-                
-            try:
-                df = pd.read_csv(path)
-                topico_col = get_col(df, ['Topico', 'Tópico'])
-                df_topic = df[df[topico_col] == t_name]
-                if len(df_topic) == 0:
-                    continue
-                
-                val_col = get_col(df, ['Latencia_ms', 'Latencia (ms)'])
-                latencies = df_topic[val_col].apply(parse_float)
-                median = latencies.median()
-                jitter = latencies.std()
-                std_dev = latencies.std() # same as jitter here but explicit
-                count = len(latencies)
-                
-                env_display = 'AWS' if env == 'Nuvem' else env
-                rows.append([env_display, t_name, format_float(median), format_float(jitter), format_float(std_dev), count])
-            except Exception as e:
-                print(f"Error reading A {path}: {e}")
-                
-    return pd.DataFrame(rows, columns=['Ambiente', 'Tópico', 'Lat. Mediana (ms)', 'Jitter (ms)', 'Desvio Padrão (ms)', 'Amostras'])
 
-def process_table_b(base_path):
-    envs = ['local', 'edison', 'aws']
-    topics_agents = [
-        ('/bloco/disponivel', 'resultados_sensor.csv'),
-        ('/cam/capture', 'resultados_Cam.csv'),
-        ('/colaboracao/fim', 'resultados_UR10.csv'),
-        ('/entregador/coletaDisponivel', 'resultados_Franka.csv'),
-        ('/entregador/encomendaColetada', 'resultados_youBot.csv'),
-        ('/entregador/encomendaDisponibilizada', 'resultados_youBot.csv'),
-        ('/entregador/pontoRecebimento', 'resultados_youBot.csv')
-    ]
-    
-    rows = []
-    for env in envs:
-        # Agents first
-        for t_name, f_name in topics_agents:
-            path = os.path.join(base_path, 'com edge ai', 'cnn_autoral', env, f_name)
-            if not os.path.exists(path):
-                continue
-            try:
-                df = pd.read_csv(path)
-                topico_col = get_col(df, ['Topico', 'Tópico'])
-                df_topic = df[df[topico_col] == t_name]
-                if len(df_topic) == 0:
-                    continue
-                val_col = get_col(df, ['Latencia_ms', 'Latencia (ms)'])
-                latencies = df_topic[val_col].apply(parse_float)
-                rows.append([env.capitalize() if env != 'aws' else 'AWS', t_name, format_float(latencies.median()), format_float(latencies.std()), format_float(latencies.std()), len(latencies)])
-            except Exception as e:
-                print(f"Error reading B {path}: {e}")
-                
-        # ESP metrics
-        esp_path = os.path.join(base_path, 'com edge ai', 'cnn_autoral', env, 'metricas_esp.csv')
-        if os.path.exists(esp_path):
-            try:
-                df_esp = pd.read_csv(esp_path)
-                topico_col = get_col(df_esp, ['Topico', 'Tópico'])
-                # esp classificar
-                classificar = df_esp[df_esp[topico_col] == '/esp/classificar']
-                if len(classificar) > 0:
-                    val_col = get_col(df_esp, ['Latencia_ms', 'Latencia (ms)', 'Latencia'])
-                    lats = classificar[val_col].apply(parse_float)
-                    rows.append([env.capitalize() if env != 'aws' else 'AWS', '/esp/classificar', format_float(lats.median()), format_float(lats.std()), format_float(lats.std()), len(lats)])
-            except Exception as e:
-                print(f"Error reading B esp {esp_path}: {e}")
-                
-        # esp resultado is in ur10
-        ur10_path = os.path.join(base_path, 'com edge ai', 'cnn_autoral', env, 'resultados_UR10.csv')
-        if os.path.exists(ur10_path):
-            try:
-                df_ur10 = pd.read_csv(ur10_path)
-                topico_col = get_col(df_ur10, ['Topico', 'Tópico'])
-                resultado = df_ur10[df_ur10[topico_col] == '/esp/resultado']
-                if len(resultado) > 0:
-                    val_col = get_col(df_ur10, ['Latencia_ms', 'Latencia (ms)'])
-                    lats = resultado[val_col].apply(parse_float)
-                    rows.append([env.capitalize() if env != 'aws' else 'AWS', '/esp/resultado', format_float(lats.median()), format_float(lats.std()), format_float(lats.std()), len(lats)])
-            except Exception as e:
-                print(f"Error reading B ur10 {ur10_path}: {e}")
-                
-    # Sort logically
-    return pd.DataFrame(rows, columns=['Ambiente', 'Tópico', 'Lat. Mediana (ms)', 'Jitter (ms)', 'Desvio Padrão (ms)', 'Amostras'])
+def create_pdf_table(df, filepath, is_landscape=False):
+    """Salva um DataFrame como tabela PDF via matplotlib."""
+    if df.empty:
+        print(f"  ⚠ DataFrame vazio — pulando {os.path.basename(filepath)}")
+        return
 
-def process_table_c(base_path):
-    models = [('cnn_autoral', 'CNN Autoral'), ('v2', 'MobileNetV2'), ('v3', 'MobileNetV3 Small')]
-    envs = ['local', 'edison', 'aws']
-    
-    rows = []
-    for m_dir, m_name in models:
-        all_inf = []
-        for env in envs:
-            esp_path = os.path.join(base_path, 'com edge ai', m_dir, env, 'metricas_esp.csv')
-            if os.path.exists(esp_path):
-                try:
-                    df = pd.read_csv(esp_path)
-                    val_col = get_col(df, ['Inferencia_ms', 'Inferencia (ms)', 'Inferência (ms)'])
-                    infs = df[val_col].dropna().apply(parse_float)
-                    all_inf.extend(infs.tolist())
-                except Exception as e:
-                    print(f"Error reading C {esp_path}: {e}")
-        if all_inf:
-            s_inf = pd.Series(all_inf)
-            rows.append([m_name, format_float(s_inf.median()), format_float(s_inf.std()), len(all_inf)])
-            
-    return pd.DataFrame(rows, columns=['Arquitetura do Modelo', 'Tempo Mediano (ms)', 'Desvio Padrão (ms)', 'Amostras'])
+    max_nl = max(
+        (df[c].astype(str).str.count('\n').max() for c in df.columns
+         if df[c].dtype == object),
+        default=0
+    )
+    fig_h = max_nl * 0.4 + len(df) * 0.5 + 2
+    fig_w = 14 if is_landscape else 11
 
-def wrap_text(text, width=25):
-    import textwrap
-    if len(text) > width:
-        return '\n'.join(textwrap.wrap(text, width))
-    return text
-
-def create_pdf(df, filename, is_landscape=False):
-    # Calculate height based on newlines in string columns only
-    max_newlines_per_col = []
-    for col in df.columns:
-        if df[col].dtype == object:
-            max_newlines_per_col.append(df[col].astype(str).str.count('\n').max())
-        else:
-            max_newlines_per_col.append(0)
-    
-    max_newlines = max(max_newlines_per_col) if max_newlines_per_col else 0
-    fig_height = max_newlines * 0.4 + len(df) * 0.5 + 2
-
-    if is_landscape:
-        fig, ax = plt.subplots(figsize=(14, fig_height))
-    else:
-        fig, ax = plt.subplots(figsize=(11, fig_height))
-        
-    ax.axis('tight')
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     ax.axis('off')
-    
-    # Text wrap topics if needed
-    if 'Tópico' in df.columns:
-        df['Tópico'] = df['Tópico'].apply(lambda x: wrap_text(x, 28))
-    
-    table = ax.table(cellText=df.values, colLabels=df.columns, cellLoc='center', loc='center')
-    
+
+    # Wrap tópico se necessário
+    disp = df.copy()
+    if 'Tópico' in disp.columns:
+        import textwrap
+        disp['Tópico'] = disp['Tópico'].apply(
+            lambda x: '\n'.join(textwrap.wrap(str(x), 28)))
+
+    table = ax.table(cellText=disp.values, colLabels=disp.columns,
+                     cellLoc='center', loc='center')
     table.auto_set_font_size(False)
-    table.set_fontsize(11)
-    table.scale(1, 2)
-    
+    table.set_fontsize(10)
+    table.scale(1, 1.8)
+
     for (row, col), cell in table.get_celld().items():
         cell.set_edgecolor('black')
         if row == 0:
             cell.set_text_props(weight='bold')
             cell.set_facecolor('#f0f0f0')
-            cell.set_edgecolor('black')
             cell.set_linewidth(1.5)
         else:
             cell.set_linewidth(0.5)
-            
-    plt.text(0.5, -0.05, "Fonte: elaborada pelo autor (2026).", ha='center', va='top', transform=ax.transAxes, fontsize=10)
+
+    plt.text(0.5, -0.03, "Fonte: elaborada pelo autor (2026).",
+             ha='center', va='top', transform=ax.transAxes, fontsize=9)
     plt.tight_layout()
-    plt.savefig(filename, format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig(filepath, format='pdf', bbox_inches='tight', dpi=300)
     plt.close()
+    print(f"  ✓ Gerado: {os.path.basename(filepath)}")
 
-base = os.path.abspath(os.path.dirname(__file__))
 
-print("Generating Appendix A...")
-df_a = process_table_a(base)
-create_pdf(df_a, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_A_sem_edge_ai.pdf'), True)
+# =============================================================================
+# APÊNDICE A — Sem Edge AI
+# =============================================================================
+print("\n=== Gerando Apêndice A (Sem Edge AI) ===")
 
-print("Generating Appendix B...")
-df_b = process_table_b(base)
-create_pdf(df_b, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_B_com_edge_ai.pdf'), True)
+# Mapeamento: (nome_exibição, arquivo_Local, arquivo_Edison, arquivo_Nuvem)
+TOPICOS_SEM = [
+    ('/bloco/disponivel',
+     'resultados_sensor.csv', 'resultados_sensor_Edison.csv', 'resultados_sensorNuvem.csv'),
+    ('/entregador/coletaDisponivel',
+     'resultados_Franka.csv', 'resultados_Franka_Edison.csv', 'resultados_FrankaNuvem.csv'),
+    ('/entregador/pontoRecebimento',
+     'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv'),
+    ('/entregador/encomendaColetada',
+     'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv'),
+    ('/entregador/encomendaDisponibilizada',
+     'resultados_youBot.csv', 'resultados_youBot_Edison.csv', 'resultados_youBotNuvem.csv'),
+    ('/colaboracao/fim',
+     'resultados_UR10.csv', 'resultados_UR10_Edison.csv', 'resultados_UR10Nuvem.csv'),
+]
 
-print("Generating Appendix C...")
-df_c = process_table_c(base)
-create_pdf(df_c, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'apendices_pdf', 'apendice_C_inferencia_esp32.pdf'), False)
+envs_sem = {
+    'Local':  ('Local',  0),
+    'Edison': ('Edison', 1),
+    'AWS':    ('Nuvem',  2),
+}
 
-print("Done!")
+rows_a = []
+for topico, f_local, f_edison, f_nuvem in TOPICOS_SEM:
+    for env_label, (pasta, _) in envs_sem.items():
+        fname = {'Local': f_local, 'Edison': f_edison, 'AWS': f_nuvem}[env_label]
+        fpath = os.path.join(SEM_EDGE, pasta, fname)
+        if not os.path.exists(fpath):
+            continue
+        try:
+            df = pd.read_csv(fpath)
+            tc = get_col(df, ['Topico', 'Tópico'])
+            lc = get_col(df, ['Latencia_ms'])
+            if tc is None or lc is None:
+                continue
+            sub = df[df[tc] == topico][lc].apply(parse_float)
+            if sub.empty:
+                continue
+            rows_a.append([env_label, topico,
+                           fmt(sub.median()), fmt(sub.std()), len(sub)])
+        except Exception as e:
+            print(f"  ⚠ {fpath}: {e}")
+
+df_a = pd.DataFrame(rows_a, columns=['Ambiente', 'Tópico',
+                                      'Lat. Mediana (ms)', 'Jitter (ms)', 'Amostras'])
+create_pdf_table(df_a, os.path.join(OUT_DIR, 'apendice_A_sem_edge_ai.pdf'),
+                 is_landscape=True)
+
+
+# =============================================================================
+# APÊNDICE B — Com Edge AI (CNN Autoral)
+# =============================================================================
+print("\n=== Gerando Apêndice B (Com Edge AI — CNN Autoral) ===")
+
+envs_com = {
+    'Local':  os.path.join(COM_EDGE, 'cnn_autoral', 'local'),
+    'Edison': os.path.join(COM_EDGE, 'cnn_autoral', 'edison'),
+    'AWS':    os.path.join(COM_EDGE, 'cnn_autoral', 'aws'),
+}
+
+rows_b = []
+
+for env_label, pasta in envs_com.items():
+    if not os.path.isdir(pasta):
+        print(f"  ⚠ Pasta não encontrada: {pasta}")
+        continue
+
+    # Calcular offset de relógio para corrigir /esp/resultado
+    metricas_path = os.path.join(pasta, 'metricas_esp.csv')
+    offset_ms = 0.0
+    if os.path.exists(metricas_path):
+        df_esp = pd.read_csv(metricas_path)
+        offset_ms = float(np.median(df_esp['timestamp_envio'] - df_esp['timestamp_recebido'])) * 1000.0
+
+    # Tópicos dos agentes
+    for csv_file in glob.glob(os.path.join(pasta, 'resultados_*.csv')):
+        try:
+            df = pd.read_csv(csv_file)
+            tc = get_col(df, ['Topico', 'Tópico'])
+            lc = get_col(df, ['Latencia_ms'])
+            if tc is None or lc is None:
+                continue
+            for topico, sub_df in df.groupby(tc):
+                lats = sub_df[lc].apply(parse_float)
+                # Corrige /esp/resultado
+                if topico == '/esp/resultado' and offset_ms != 0:
+                    lats = lats - offset_ms
+                lats = lats[lats.abs() < 10_000]   # remove outliers
+                if lats.empty:
+                    continue
+                rows_b.append([env_label, topico,
+                               fmt(lats.median()), fmt(lats.std()), len(lats)])
+        except Exception as e:
+            print(f"  ⚠ {csv_file}: {e}")
+
+    # /esp/classificar via metricas_esp.csv
+    if os.path.exists(metricas_path):
+        df_esp = pd.read_csv(metricas_path)
+        lats_class = (df_esp['timestamp_logger'] - df_esp['timestamp_envio']) * 1000.0
+        lats_class = lats_class[lats_class.abs() < 10_000]
+        if not lats_class.empty:
+            rows_b.append([env_label, '/esp/classificar',
+                           fmt(lats_class.median()), fmt(lats_class.std()),
+                           len(lats_class)])
+
+df_b = pd.DataFrame(rows_b, columns=['Ambiente', 'Tópico',
+                                      'Lat. Mediana (ms)', 'Jitter (ms)', 'Amostras'])
+df_b['_ord'] = pd.Categorical(df_b['Ambiente'],
+                               categories=['Local', 'Edison', 'AWS'], ordered=True)
+df_b = df_b.sort_values(['Tópico', '_ord']).drop('_ord', axis=1).reset_index(drop=True)
+create_pdf_table(df_b, os.path.join(OUT_DIR, 'apendice_B_com_edge_ai.pdf'),
+                 is_landscape=True)
+
+
+# =============================================================================
+# APÊNDICE C — Tempo de Inferência por Modelo no ESP32
+# =============================================================================
+print("\n=== Gerando Apêndice C (Inferência ESP32 por Modelo) ===")
+
+modelos_c = [
+    ('CNN Autoral',    os.path.join(COM_EDGE, 'cnn_autoral', 'local', 'metricas_esp.csv')),
+    ('MobileNet V2',   os.path.join(COM_EDGE, 'v2', 'metricas_esp.csv')),
+    ('MobileNet V3',   os.path.join(COM_EDGE, 'v3', 'metricas_esp.csv')),
+]
+
+rows_c = []
+for nome, fpath in modelos_c:
+    if not os.path.exists(fpath):
+        print(f"  ⚠ Não encontrado: {fpath}")
+        continue
+    df = pd.read_csv(fpath)
+    col = 'tempo_inferencia_ms'
+    if col not in df.columns:
+        print(f"  ⚠ Coluna '{col}' ausente em {fpath}")
+        continue
+    infs = df[col].dropna().apply(parse_float)
+    rows_c.append([nome, fmt(infs.median()), fmt(infs.std()), len(infs)])
+
+df_c = pd.DataFrame(rows_c, columns=['Arquitetura', 'Tempo Mediano (ms)',
+                                      'Desvio Padrão (ms)', 'Amostras'])
+create_pdf_table(df_c, os.path.join(OUT_DIR, 'apendice_C_inferencia_esp32.pdf'))
+
+print("\n✅ Todos os apêndices foram gerados em:", OUT_DIR, "\n")
